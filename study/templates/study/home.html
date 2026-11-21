@@ -1,0 +1,86 @@
+{% load static %}
+<!doctype html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f4f7fb">
+    <title>Teach Me — учись по конспекту</title>
+    <link rel="stylesheet" href="{% static 'study/styles.css' %}">
+</head>
+<body>
+    <header class="topbar">
+        <a class="brand" href="/" aria-label="Teach Me — главная">
+            <span class="brand-mark" aria-hidden="true">T</span>
+            <span>Teach Me</span>
+            <span class="brand-note">учись по конспекту</span>
+        </a>
+        <span class="topbar-label">ЛИЧНЫЙ ТРЕНАЖЁР</span>
+    </header>
+
+    <main class="page-shell">
+        <section class="intro">
+            <span class="demo-badge"><span class="badge-dot"></span> РЕЖИМ {{ mode }}</span>
+            <p class="eyebrow">ТВОИ ЗНАНИЯ — В ТВОИХ РУКАХ</p>
+            <h1>Из конспекта —<br class="mobile-break"> в учебные карточки</h1>
+            <p class="intro-copy">Сохрани главное. Проверь себя. Вернись к знаниям позже.</p>
+        </section>
+
+        {% if success_message %}
+            <div class="notice success-notice" role="status"><span class="notice-icon" aria-hidden="true">✓</span><span>{{ success_message }}</span></div>
+        {% endif %}
+
+        {% if sources %}
+            <section class="saved-sources" aria-labelledby="saved-title">
+                <div><p class="eyebrow">ВАШИ МАТЕРИАЛЫ</p><h2 id="saved-title">Сохранённые наборы</h2></div>
+                <ul>
+                    {% for source in sources %}
+                        <li><a href="{% url 'source_detail' pk=source.pk %}"><span>{{ source.title }}</span><span class="saved-meta">{{ source.cards.count }} карточки · {{ source.get_generation_mode_display|default:source.generation_mode|upper }}</span></a></li>
+                    {% endfor %}
+                </ul>
+            </section>
+        {% endif %}
+
+        <div class="content-grid">
+            <section class="panel form-panel">
+                <div class="panel-heading"><span class="step-number">01</span><div><h2>Ваш учебный материал</h2><p>Добавьте тему и текст конспекта</p></div></div>
+                <form method="post" class="source-form" novalidate>
+                    {% csrf_token %}
+                    {% if form.non_field_errors %}<div class="notice error-notice" role="alert">{{ form.non_field_errors }}</div>{% endif %}
+                    <div class="field-group"><label for="{{ form.title.id_for_label }}">Название темы</label>{{ form.title }}{% if form.title.errors %}<div class="field-errors" role="alert">{{ form.title.errors }}</div>{% endif %}</div>
+                    <div class="field-group"><div class="label-row"><label for="{{ form.text.id_for_label }}">Конспект</label><span class="field-hint">80–12 000 символов</span></div>{{ form.text }}{% if form.text.errors %}<div class="field-errors" role="alert">{{ form.text.errors }}</div>{% endif %}<p class="field-help">В DEMO выдаются заранее подготовленные карточки. LIVE обращается к настроенному провайдеру.</p></div>
+                    <button class="primary-button" type="submit"><span>Создать карточки</span><span class="button-arrow" aria-hidden="true">→</span></button>
+                </form>
+            </section>
+
+            <aside class="panel guide-panel">
+                <div class="panel-heading guide-heading"><span class="guide-icon" aria-hidden="true">✦</span><div><h2>Как это работает</h2><p>Три простых шага</p></div></div>
+                <ol class="steps-list">
+                    <li><span class="list-number">01</span><div><h3>Конспект</h3><p>Название и текст проверяются на сервере.</p></div></li>
+                    <li><span class="list-number">02</span><div><h3>Карточки</h3><p>Вопрос, ответ и точная цитата из источника.</p></div></li>
+                    <li><span class="list-number">03</span><div><h3>Самопроверка</h3><p>Сначала вспомните ответ, затем откройте его.</p></div></li>
+                </ol>
+                <div class="privacy-note"><span aria-hidden="true">⌂</span><p>Цитата подтверждает наличие фрагмента, но не истинность ответа.</p></div>
+            </aside>
+        </div>
+
+        {% if cards %}
+            <section class="cards-section" aria-labelledby="cards-title">
+                <div class="cards-heading"><div><p class="eyebrow">{{ cards|length }} КАРТОЧКИ · {{ mode }}</p><h2 id="cards-title">Проверьте, что запомнили</h2></div><p>Сначала ответьте сами, затем откройте ответ.</p></div>
+                <div class="cards-grid">
+                    {% for card in cards %}
+                        <article class="study-card">
+                            <span class="card-index">КАРТОЧКА {{ forloop.counter|stringformat:"02d" }}</span>
+                            <h3>{{ card.question }}</h3>
+                            <details><summary>Показать ответ</summary><div class="card-answer"><p>{{ card.answer }}</p><div class="source-quote"><span>ЦИТАТА ИЗ КОНСПЕКТА</span><blockquote>{{ card.source_quote }}</blockquote></div></div></details>
+                        </article>
+                    {% endfor %}
+                </div>
+            </section>
+        {% endif %}
+
+        <footer class="page-footer"><span>TEACH ME <span class="footer-separator">·</span> DJANGO + SQLITE</span><span>Цитата подтверждает наличие фрагмента, но не истинность ответа.</span></footer>
+    </main>
+</body>
+</html>
+

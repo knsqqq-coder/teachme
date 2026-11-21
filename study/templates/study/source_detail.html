@@ -1,0 +1,56 @@
+{% load static %}
+<!doctype html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f4f7fb">
+    <title>{{ source.title }} — Teach Me</title>
+    <link rel="stylesheet" href="{% static 'study/styles.css' %}">
+</head>
+<body>
+    <header class="topbar">
+        <a class="brand" href="{% url 'home' %}" aria-label="Teach Me — главная">
+            <span class="brand-mark" aria-hidden="true">T</span>
+            <span>Teach Me</span>
+            <span class="brand-note">учись по конспекту</span>
+        </a>
+        <span class="topbar-label">НАБОР КАРТОЧЕК · {{ source.generation_mode|upper }}</span>
+    </header>
+    <main class="page-shell detail-shell">
+        <a class="back-link" href="{% url 'home' %}">← К конспектам</a>
+        <section class="intro detail-intro">
+            <span class="demo-badge"><span class="badge-dot"></span> {{ source.generation_mode|upper }} · сохранено</span>
+            <p class="eyebrow">УЧЕБНЫЙ НАБОР · {{ source.created_at|date:"d.m.Y H:i" }}</p>
+            <h1>{{ source.title }}</h1>
+            <p class="intro-copy">Сначала попробуйте вспомнить ответ самостоятельно.</p>
+        </section>
+        <section class="cards-section" aria-label="Учебные карточки">
+            <div class="cards-grid saved-cards-grid">
+                {% for card in cards %}
+                    <article class="study-card">
+                        <span class="card-index">КАРТОЧКА {{ forloop.counter|stringformat:"02d" }}</span>
+                        <h2>{{ card.question }}</h2>
+                        <details>
+                            <summary>Жауапты көрсету</summary>
+                            <div class="card-answer">
+                                <p>{{ card.answer }}</p>
+                                <div class="source-quote">
+                                    <span>ДӘЙЕКСӨЗ · КОНСПЕКТ</span>
+                                    <blockquote>{{ card.source_quote }}</blockquote>
+                                </div>
+                            </div>
+                        </details>
+                    </article>
+                {% empty %}
+                    <p>В этом наборе пока нет карточек.</p>
+                {% endfor %}
+            </div>
+        </section>
+        <footer class="page-footer">
+            <span>TEACH ME <span class="footer-separator">·</span> DJANGO + SQLITE</span>
+            <span>Дәйексөз үзіндінің барын растайды, бірақ жауаптың ақиқаттығын емес.</span>
+        </footer>
+    </main>
+</body>
+</html>
