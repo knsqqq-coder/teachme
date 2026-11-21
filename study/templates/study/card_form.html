@@ -1,0 +1,71 @@
+{% load static %}
+<!doctype html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f4f7fb">
+    <title>Карточканы өңдеу — Teach Me</title>
+    <link rel="stylesheet" href="{% static 'study/styles.css' %}">
+    <style>
+        .edit-shell { max-width:760px; margin-top:38px; }
+        .edit-panel { padding:26px; }
+        .edit-form { display:grid; gap:17px; }
+        .edit-field { display:grid; gap:8px; }
+        .edit-field label { color:#39475a; font-size:12px; font-weight:700; }
+        .edit-field input, .edit-field textarea { width:100%; border:1px solid #d7e0eb; border-radius:8px; outline:none; color:#253349; background:#fbfcfe; font:inherit; font-size:12px; }
+        .edit-field input { height:42px; padding:0 12px; }
+        .edit-field textarea { min-height:115px; padding:12px; line-height:1.55; resize:vertical; }
+        .edit-field input:focus, .edit-field textarea:focus { border-color:#6da2d8; background:white; box-shadow:0 0 0 3px rgba(51,120,190,.12); }
+        .edit-error { color:#b63d45; font-size:11px; }
+        .edit-error ul { margin:0; padding-left:17px; }
+        .form-actions { display:flex; flex-wrap:wrap; align-items:center; gap:12px; margin-top:4px; }
+        .cancel-link { color:#66758a; font-size:12px; font-weight:700; text-decoration:none; }
+        .cancel-link:hover { text-decoration:underline; }
+        .compare-panel { margin-top:16px; padding:18px 20px; border:1px solid #e3e9f1; border-radius:12px; background:#fff; }
+        .compare-panel h2 { margin:0 0 10px; font-size:14px; }
+        .compare-text { color:#536177; font-size:12px; line-height:1.7; }
+        .review-reminder { margin:0 0 19px; padding:11px 13px; border:1px solid #f0dfbd; border-radius:8px; color:#805715; background:#fff7e8; font-size:11px; line-height:1.5; }
+    </style>
+</head>
+<body>
+    {% autoescape on %}
+    <header class="topbar">
+        <a class="brand" href="{% url 'home' %}" aria-label="Teach Me — главная"><span class="brand-mark" aria-hidden="true">T</span><span>Teach Me</span><span class="brand-note">учись по конспекту</span></a>
+        <span class="topbar-label">КАРТОЧКА {{ card.position }}</span>
+    </header>
+    <main class="page-shell edit-shell">
+        <a class="back-link" href="{% url 'source_detail' pk=source.pk %}">← {{ source.title }}</a>
+        <section class="intro detail-intro">
+            <span class="demo-badge"><span class="badge-dot"></span> КАРТОЧКАНЫ ӨҢДЕУ</span>
+            <p class="eyebrow">СҰРАҚ · {{ card.position|stringformat:"02d" }}</p>
+            <h1>Карточка мәтінін түзету</h1>
+            <p class="intro-copy">Жауап пен дәйексөзді бастапқы конспектпен салыстырыңыз.</p>
+        </section>
+        <section class="panel edit-panel">
+            <p class="review-reminder">Өзгерісті сақтағаннан кейін карточка қайтадан «Тексеру керек» күйіне өтеді.</p>
+            <form method="post" class="edit-form" novalidate>
+                {% csrf_token %}
+                {% if form.non_field_errors %}<div class="notice error-notice" role="alert">{{ form.non_field_errors }}</div>{% endif %}
+                {% for field in form %}
+                    <div class="edit-field">
+                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        {{ field }}
+                        {% if field.errors %}<div class="edit-error" role="alert">{{ field.errors }}</div>{% endif %}
+                    </div>
+                {% endfor %}
+                <div class="form-actions">
+                    <button class="primary-button" type="submit"><span>Сақтау</span><span class="button-arrow" aria-hidden="true">→</span></button>
+                    <a class="cancel-link" href="{% url 'source_detail' pk=source.pk %}">Бас тарту</a>
+                </div>
+            </form>
+        </section>
+        <section class="compare-panel" aria-labelledby="compare-title">
+            <h2 id="compare-title">Салыстыруға бастапқы конспект</h2>
+            <div class="compare-text">{{ source.text|linebreaksbr }}</div>
+        </section>
+        <footer class="page-footer"><span>TEACH ME <span class="footer-separator">·</span> DJANGO + SQLITE</span><span>Дәйексөз үзіндінің барын растайды, бірақ жауаптың ақиқаттығын емес.</span></footer>
+    </main>
+    {% endautoescape %}
+</body>
+</html>

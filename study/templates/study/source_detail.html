@@ -7,8 +7,37 @@
     <meta name="theme-color" content="#f4f7fb">
     <title>{{ source.title }} — Teach Me</title>
     <link rel="stylesheet" href="{% static 'study/styles.css' %}">
+    <style>
+        .review-summary { display:flex; flex-wrap:wrap; gap:10px; margin:18px 0 14px; }
+        .review-summary span { padding:7px 11px; border:1px solid #dfe7f0; border-radius:999px; color:#53647b; background:#fff; font-size:11px; font-weight:700; }
+        .review-summary .verified-count { color:#176c4e; border-color:#c9ead9; background:#eaf8f0; }
+        .review-summary .pending-count { color:#8a5b13; border-color:#f0dfbd; background:#fff7e8; }
+        .filter-nav { display:flex; flex-wrap:wrap; gap:8px; margin:0 0 18px; }
+        .filter-link { display:inline-flex; align-items:center; gap:5px; padding:8px 11px; border:1px solid #dfe7f0; border-radius:8px; color:#52627a; background:#fff; font-size:11px; font-weight:700; text-decoration:none; }
+        .filter-link:hover { border-color:#aac3df; background:#f8fbff; }
+        .filter-link.is-active { border-color:#2563a8; color:#fff; background:#2563a8; }
+        .source-text-panel { margin:22px 0; padding:18px 20px; border:1px solid #e3e9f1; border-radius:12px; background:#fff; }
+        .source-text-panel h2 { margin:0 0 10px; font-size:15px; }
+        .source-text-body { color:#536177; font-size:12px; line-height:1.7; }
+        .card-topline { display:flex; align-items:center; justify-content:space-between; gap:10px; }
+        .review-state { padding:7px 11px; border:1px solid #dfe7f0; border-radius:999px; color:#53647b; background:#fff; font-size:11px; font-weight:700; white-space:nowrap; }
+        .review-state.is-verified { color:#176c4e; border-color:#c9ead9; background:#eaf8f0; }
+        .card-actions { display:flex; flex-wrap:wrap; align-items:center; gap:12px; margin-top:14px; }
+        .edit-card-link, .delete-card-link { font-size:11px; font-weight:700; text-decoration:none; }
+        .edit-card-link { color:#2563a8; }
+        .delete-card-link { color:#b63d45; }
+        .edit-card-link:hover, .delete-card-link:hover { text-decoration:underline; }
+        .review-action-form { display:inline; margin:0; }
+        .review-action-button { padding:7px 10px; border:1px solid #cfdfef; border-radius:7px; color:#20598f; background:#f4f8fd; font:inherit; font-size:10px; font-weight:700; cursor:pointer; }
+        .review-action-button:hover { background:#eaf2fb; }
+        .review-action-button.is-reset { color:#765513; border-color:#eee0c3; background:#fff9ec; }
+        .empty-cards { padding:22px; border:1px dashed #d5dfeb; border-radius:12px; color:#65748a; background:#fff; font-size:13px; }
+        .review-help { margin:0 0 17px; color:#68778c; font-size:11px; line-height:1.5; }
+        @media(max-width:560px) { .card-topline { align-items:flex-start; flex-direction:column; } }
+    </style>
 </head>
 <body>
+    {% autoescape on %}
     <header class="topbar">
         <a class="brand" href="{% url 'home' %}" aria-label="Teach Me — главная">
             <span class="brand-mark" aria-hidden="true">T</span>
@@ -23,13 +52,38 @@
             <span class="demo-badge"><span class="badge-dot"></span> {{ source.generation_mode|upper }} · сохранено</span>
             <p class="eyebrow">УЧЕБНЫЙ НАБОР · {{ source.created_at|date:"d.m.Y H:i" }}</p>
             <h1>{{ source.title }}</h1>
-            <p class="intro-copy">Сначала попробуйте вспомнить ответ самостоятельно.</p>
+            <p class="intro-copy">Сначала вспомните ответ, затем сравните его с конспектом.</p>
         </section>
+
+        <div class="review-summary" aria-label="Сводка проверки">
+            <span class="verified-count">Тексерілді {{ verified_count }} / {{ total_count }}</span>
+            <span class="pending-count">Қалды {{ pending_count }}</span>
+        </div>
+        <p class="review-help">Әр карточканың сұрағын, жауабын және дәйексөзін конспектпен студент өзі салыстырады. Бұл белгі автоматты ақиқат тексеруі емес.</p>
+
+        <nav class="filter-nav" aria-label="Карточкаларды сүзу">
+            <a class="filter-link{% if status == 'all' %} is-active{% endif %}" href="?status=all"{% if status == 'all' %} aria-current="page"{% endif %}>Барлығы ({{ total_count }})</a>
+            <a class="filter-link{% if status == 'pending' %} is-active{% endif %}" href="?status=pending"{% if status == 'pending' %} aria-current="page"{% endif %}>Тексеру керек ({{ pending_count }})</a>
+            <a class="filter-link{% if status == 'verified' %} is-active{% endif %}" href="?status=verified"{% if status == 'verified' %} aria-current="page"{% endif %}>Тексерілген ({{ verified_count }})</a>
+        </nav>
+
+        <section class="source-text-panel" aria-labelledby="source-text-title">
+            <h2 id="source-text-title">Бастапқы конспект</h2>
+            <div class="source-text-body">{{ source.text|linebreaksbr }}</div>
+        </section>
+
         <section class="cards-section" aria-label="Учебные карточки">
             <div class="cards-grid saved-cards-grid">
                 {% for card in cards %}
                     <article class="study-card">
-                        <span class="card-index">КАРТОЧКА {{ forloop.counter|stringformat:"02d" }}</span>
+                        <div class="card-topline">
+                            <span class="card-index">КАРТОЧКА · {{ card.position|stringformat:"02d" }}</span>
+                            {% if card.is_verified %}
+                                <span class="review-state is-verified">Тексерілді</span>
+                            {% else %}
+                                <span class="review-state">Тексеру керек</span>
+                            {% endif %}
+                        </div>
                         <h2>{{ card.question }}</h2>
                         <details>
                             <summary>Жауапты көрсету</summary>
@@ -41,9 +95,31 @@
                                 </div>
                             </div>
                         </details>
+                        <div class="card-actions">
+                            {% if card.is_verified %}
+                                <form method="post" action="{% url 'card_review' pk=card.pk %}" class="review-action-form">
+                                    {% csrf_token %}
+                                    <button class="review-action-button is-reset" type="submit" name="action" value="reset">Тексеруге қайтару</button>
+                                </form>
+                            {% else %}
+                                <form method="post" action="{% url 'card_review' pk=card.pk %}" class="review-action-form">
+                                    {% csrf_token %}
+                                    <button class="review-action-button" type="submit" name="action" value="verify">Карточканы тексердім</button>
+                                </form>
+                            {% endif %}
+                            <a class="edit-card-link" href="{% url 'card_edit' pk=card.pk %}">Өңдеу</a>
+                            <a class="delete-card-link" href="{% url 'card_delete' pk=card.pk %}">Өшіру</a>
+                        </div>
                     </article>
                 {% empty %}
-                    <p>В этом наборе пока нет карточек.</p>
+                    {% if total_count == 0 %}
+                        <p class="empty-cards">Бұл жинақта карточка қалмады. Бастапқы конспект жоғарыда сақтаулы.</p>
+                    {% else %}
+                        <div class="empty-cards">
+                            <p>Бұл сүзгіде карточка жоқ.</p>
+                            <a href="?status=all">Барлығын көрсету</a>
+                        </div>
+                    {% endif %}
                 {% endfor %}
             </div>
         </section>
@@ -52,5 +128,6 @@
             <span>Дәйексөз үзіндінің барын растайды, бірақ жауаптың ақиқаттығын емес.</span>
         </footer>
     </main>
+    {% endautoescape %}
 </body>
 </html>

@@ -17,6 +17,7 @@ class Flashcard(models.Model):
     question = models.CharField(max_length=300)
     answer = models.TextField(max_length=1600)
     source_quote = models.TextField(max_length=1600)
+    is_verified = models.BooleanField(default=False)
 
     class Meta:
         ordering = ['position', 'id']

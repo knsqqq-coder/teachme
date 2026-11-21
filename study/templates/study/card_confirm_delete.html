@@ -1,0 +1,47 @@
+{% load static %}
+<!doctype html>
+<html lang="kk">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f4f7fb">
+    <title>Өшіруді растау — Teach Me</title>
+    <link rel="stylesheet" href="{% static 'study/styles.css' %}">
+    <style>
+        .confirm-shell { max-width:680px; margin-top:54px; }
+        .confirm-panel { padding:28px; border:1px solid #f0d7d8; }
+        .confirm-warning { margin:0 0 20px; padding:13px 15px; border:1px solid #f1d1d2; border-radius:9px; color:#96363e; background:#fff3f3; font-size:12px; line-height:1.6; }
+        .confirm-question { margin:0 0 8px; font-size:19px; line-height:1.45; }
+        .confirm-answer { margin:0 0 23px; color:#65748a; font-size:12px; }
+        .confirm-actions { display:flex; flex-wrap:wrap; align-items:center; gap:13px; }
+        .danger-button { min-height:43px; padding:0 16px; border:0; border-radius:8px; color:#fff; background:#b63d45; font:inherit; font-size:12px; font-weight:750; cursor:pointer; }
+        .danger-button:hover { background:#982f37; }
+        .cancel-link { color:#66758a; font-size:12px; font-weight:700; text-decoration:none; }
+        .cancel-link:hover { text-decoration:underline; }
+    </style>
+</head>
+<body>
+    {% autoescape on %}
+    <header class="topbar">
+        <a class="brand" href="{% url 'home' %}" aria-label="Teach Me — басты бет"><span class="brand-mark" aria-hidden="true">T</span><span>Teach Me</span><span class="brand-note">конспекттен оқу</span></a>
+        <span class="topbar-label">ӨШІРУДІ РАСТАУ</span>
+    </header>
+    <main class="page-shell confirm-shell">
+        <a class="back-link" href="{% url 'source_detail' pk=source.pk %}">← {{ source.title }} жинағына қайту</a>
+        <section class="panel confirm-panel">
+            <span class="demo-badge"><span class="badge-dot"></span> РАСТАУ ҚАЖЕТ</span>
+            <p class="eyebrow">КАРТОЧКА · {{ card.position|stringformat:"02d" }}</p>
+            <h1 class="confirm-question">{{ card.question }}</h1>
+            <p class="confirm-answer">{{ card.answer }}</p>
+            <p class="confirm-warning">Бұл әрекет тек осы карточканы өшіреді. Конспект пен басқа карточкалар сақталады.</p>
+            <form method="post" class="confirm-actions">
+                {% csrf_token %}
+                <button class="danger-button" type="submit">Иә, өшіру</button>
+                <a class="cancel-link" href="{% url 'source_detail' pk=source.pk %}">Бас тарту</a>
+            </form>
+        </section>
+        <footer class="page-footer"><span>TEACH ME <span class="footer-separator">·</span> DJANGO + SQLITE</span><span>Сілтемені ашу карточканы өшірмейді.</span></footer>
+    </main>
+    {% endautoescape %}
+</body>
+</html>
